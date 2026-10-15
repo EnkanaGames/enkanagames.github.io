@@ -4,13 +4,12 @@
 薄型二つ折り財布（立体ポケット＋上部ファスナー小銭入れ）設計図ジェネレータ
 
 出力（このスクリプトと同じフォルダ）:
-  wallet_pattern_A3.dxf    型紙（実寸 1/1・A3横）
-  wallet_assembly_A3.dxf   組立図（完成状態の展開図・重なり確認・断面図・作り方）
-  wallet_pattern_A3.pdf / wallet_assembly_A3.pdf   印刷・確認用（matplotlib がある場合）
-  preview_pattern.png / preview_assembly.png       プレビュー画像
+  dxf/wallet_A4_1～6_*.dxf   A4横・実寸 1/1 の図面6枚（1～3：型紙、4～6：組立図）
+  wallet_A4_all.pdf          上の6枚をまとめた印刷用PDF（matplotlib がある場合）
+  preview/page1～6.png       プレビュー画像
 
 DXF は Jw_cad で読み込める AutoCAD R12 形式（ASCII・Shift-JIS・CRLF）。
-座標原点 (0,0) は A3 用紙の中心（Jw_cad の原点＝用紙中心に合わせている）。
+座標原点 (0,0) は A4 用紙の中心（Jw_cad の原点＝用紙中心に合わせている）。
 
 寸法を変えたいときは「設計寸法」の定数を書き換えて再実行する:
   python3 generate_wallet.py
@@ -29,7 +28,7 @@ H = 100.0            # 高さ
 R_OUT = 6.0          # 外周コーナー R
 SM = 3.0             # コバから縫い線までの距離
 
-# 右側ユニット（②台座＋③前胴＋⑥裏ポケット布＋⑨③の裏地）
+# 右側ユニット（②台座＋③前胴＋⑤裏ポケット布＋⑧③の裏地）
 # 外装には右辺と下辺で縫い付ける。上辺と左辺は開いていて、下にお札の右半分が入る
 UL = 14.0            # ユニットの左端（中心からの距離）＝折り代。閉じたとき自然に閉じる余裕
 ZT = 2.0             # ユニットの上端（ここにファスナーの務歯が乗り、外装の上端とほぼ揃う）
@@ -61,12 +60,12 @@ CW_B = C_B + WIN_CLEAR * math.hypot(1, K_AB)   # 窓の下辺（③の角押さ�
 # カード差込口（③前胴左の斜め辺）: カードポケット上端で u=D_TOP_U、底で u=D_BOT_U
 D_TOP_U, D_BOT_U = 23.0, 40.0
 
-# ⑥裏ポケット（布・上から入れる2段）。完成時の上端は斜め：(左端 u=UL での v, 右端 u=W での v)
-POCKETS = ((30.0, 22.0), (42.0, 34.0))   # ⑥a（奥・②側）, ⑥b（手前・外装側）
+# ⑤裏ポケット（布・上から入れる2段）。完成時の上端は斜め：(左端 u=UL での v, 右端 u=W での v)
+POCKETS = ((30.0, 22.0), (42.0, 34.0))   # ⑤a（奥・②側）, ⑤b（手前・外装側）
 FOLD_ALLOW = 6.0                 # 上端の折り返し代
 FABRIC_INSET = 0.5               # 布の端を革のコバより内側に下げる量
 
-# ⑦裏地（外装の内側全面・布）と ⑧芯材（左側だけ）
+# ⑥裏地（外装の内側全面・布）と ⑦芯材（左側だけ）
 CORE_IN = 2.0                    # 芯材を縫い線から離す量
 CORE_FOLD = UL + 2.0             # 芯材の中心側の端（中心からの距離）。折り目には入れない
 
@@ -99,7 +98,7 @@ def u_on_D(v):
 
 
 def pocket_top_v(idx, u):
-    """⑥の完成時の上端（斜め）の高さ"""
+    """⑤の完成時の上端（斜め）の高さ"""
     vl, vr = POCKETS[idx]
     return vl + (vr - vl) * (u - UL) / (W - UL)
 
@@ -234,7 +233,7 @@ def path_length(segs):
 # =============================================================================
 # 部品形状
 #   「投影」= 完成状態を内側から見た位置（財布座標）
-#   「展開」= 型紙（平らに置いた形）。③⑤は壁とタブの分だけ大きい
+#   「展開」= 型紙（平らに置いた形）。③は壁とタブの分だけ大きい
 # =============================================================================
 def body_outline():  # ① 外装
     return rounded_polygon([(-W, 0), (W, 0), (W, H), (-W, H)], [R_OUT] * 4)
@@ -268,7 +267,7 @@ def unit_attach_stitch(top=R_OUT):
 
 
 def left_seam(top=ZT + 2):
-    """ユニット左端の縦の縫い線：③左タブ＋②＋⑥a＋⑥b（裏ポケットの左側も閉じる）"""
+    """ユニット左端の縦の縫い線：③左タブ＋②＋⑤a＋⑤b（裏ポケットの左側も閉じる）"""
     return [L((UL + SM, top), (UL + SM, H - SM))]
 
 
@@ -277,7 +276,7 @@ def base_outline():  # ② 台座
 
 
 def pocket_outline(idx):
-    """⑥ 裏ポケット布（上端は斜め。折り返し代つき）"""
+    """⑤ 裏ポケット布（上端は斜め。折り返し代つき）"""
     i, a = FABRIC_INSET, FOLD_ALLOW
     t = lambda u: pocket_top_v(idx, u)
     return rounded_polygon(
@@ -301,12 +300,12 @@ def pocket_top_stitch(idx):
     return [L((u0, pocket_top_v(idx, u0) + 3), (u1, pocket_top_v(idx, u1) + 3))]
 
 
-def lining_outline():  # ⑦ 裏地（外装の内側全面）
+def lining_outline():  # ⑥ 裏地（外装の内側全面）
     i = FABRIC_INSET
     return rounded_polygon([(-W + i, i), (W - i, i), (W - i, H - i), (-W + i, H - i)], [R_OUT - i] * 4)
 
 
-def core_outline():  # ⑧ 芯材（左側だけ。縫い線と折り目にかけない）
+def core_outline():  # ⑦ 芯材（左側だけ。縫い線と折り目にかけない）
     u0, u1 = -(W - SM - CORE_IN), -CORE_FOLD
     v0, v1 = SM + CORE_IN, H - SM - CORE_IN
     return rounded_polygon([(u0, v0), (u1, v0), (u1, v1), (u0, v1)], [4.0, 2.0, 2.0, 4.0])
@@ -317,7 +316,7 @@ def core_outline_box():
 
 
 # 閉じたときの厚みの目安（カード部）[mm]
-_T_FIXED = 1.0 * 2 + 0.2 * 2 + 0.4 + 0.2 * 2 + 0.8 + G   # ①×2＋⑦×2＋⑧＋⑥×2＋②＋③の箱
+_T_FIXED = 1.0 * 2 + 0.2 * 2 + 0.4 + 0.2 * 2 + 0.8 + G   # ①×2＋⑥×2＋⑦＋⑤×2＋②＋③の箱
 THICK = {"min": round(_T_FIXED + 0.2, 1),                # お札1～2枚
          "max": round(_T_FIXED + 1.0 + 2 * 0.76, 1)}     # お札10枚程度＋裏ポケットにカード各1枚
 
@@ -361,7 +360,7 @@ CARD_DY = 2 * G
 
 
 def front_flat_outline():
-    """③ 外形。カード部の右下の角押さえ（旧⑤）は右タブ・下タブでつながった一体形"""
+    """③ 外形。カード部の右下の角押さえ（旧カード押さえ）は右タブ・下タブでつながった一体形"""
     xr = FR + G + T          # 右タブの外側
     xl = FL - G - T          # 左タブの外側
     yb = KB + CARD_DY        # カード面の底（展開）
@@ -459,7 +458,7 @@ def card_face_proj():
 
 
 def front_lining_flat():
-    """⑨ ③の裏地：カード面の裏に貼る布。折り線から0.5mm、自由辺から1mm内側"""
+    """⑧ ③の裏地：カード面の裏に貼る布。折り線から0.5mm、自由辺から1mm内側"""
     pts = offset_convex(card_face_proj(), [0.5, 0.5, 1.0, 0.5, 1.0])
     return rounded_polygon([(u, v + CARD_DY) for (u, v) in pts], [1.0] * len(pts))
 
@@ -545,7 +544,7 @@ LTYPES = {
     "PHANTOM": ("Phantom ____ _ _ ____", [8.0, -1.2, 1.0, -1.2, 1.0, -1.2]),
 }
 
-SHEET_W, SHEET_H = 420.0, 297.0   # A3 横
+SHEET_W, SHEET_H = 297.0, 210.0   # A4 横
 FRAME_M = 10.0
 
 
@@ -558,7 +557,7 @@ def text_width(s, h):
 
 
 class Sheet:
-    """A3 用紙1枚分の図面。座標は用紙中心原点・mm・Y上向き"""
+    """A4 用紙1枚分の図面。座標は用紙中心原点・mm・Y上向き"""
 
     def __init__(self, title):
         self.title = title
@@ -672,13 +671,13 @@ class Sheet:
         x1, y1 = SHEET_W / 2 - FRAME_M, SHEET_H / 2 - FRAME_M
         self.polyline([(x0, y0), (x1, y0), (x1, y1), (x0, y1)], "図枠", closed=True)
         # 表題欄（右下）
-        tx0, ty1 = x1 - 120, y0 + 30
+        tx0, ty1 = x1 - 110, y0 + 21
         self.polyline([(tx0, y0), (tx0, ty1), (x1, ty1)], "図枠")
-        self.line((tx0, y0 + 20), (x1, y0 + 20), "図枠")
-        self.line((tx0, y0 + 10), (x1, y0 + 10), "図枠")
-        self.text((tx0 + 3, y0 + 23), "薄型二つ折り財布（ファスナー小銭入れ付き）", 4.0)
-        self.text((tx0 + 3, y0 + 13), subtitle, 4.0)
-        self.text((tx0 + 3, y0 + 3.5), scale_note, 3.0)
+        self.line((tx0, y0 + 14), (x1, y0 + 14), "図枠")
+        self.line((tx0, y0 + 7), (x1, y0 + 7), "図枠")
+        self.text((tx0 + 2, y0 + 15.8), "薄型二つ折り財布（ファスナー小銭入れ付き）", 3.0)
+        self.text((tx0 + 2, y0 + 8.8), subtitle, 3.0)
+        self.text((tx0 + 2, y0 + 2.2), scale_note, 2.3)
         return x0, y0, x1, y1
 
     def scale_bar(self, x, y):
@@ -686,7 +685,7 @@ class Sheet:
         for i in range(11):
             t = 3.0 if i % 5 == 0 else 1.5
             self.line((x + i * 10, y), (x + i * 10, y + t), "図枠")
-        self.text((x, y + 4.5), "印刷倍率の確認用スケール 100mm（実寸で100mmになっていればOK）", 2.5)
+        self.text((x, y + 4.5), "倍率確認用 100mm（実寸で100mmならOK）", 2.3)
         self.text((x, y - 4.0), "0", 2.5, align="c")
         self.text((x + 50, y - 4.0), "50", 2.5, align="c")
         self.text((x + 100, y - 4.0), "100", 2.5, align="c")
@@ -801,34 +800,54 @@ def write_dxf(sheet, path):
 
 
 # =============================================================================
-# 型紙シート
+# 図面ページ（A4横 × 6枚。1～3：型紙、4～6：組立図）
 # =============================================================================
-def draw_pattern_sheet():
-    s = Sheet("型紙")
-    x0, y0, x1, y1 = s.frame("型紙（実寸）  部品 ①～⑨（⑤は③に一体化）",
-                             "単位 mm / 縮尺 1:1 / 用紙 A3横 / 2026-10-15")
+PAGE_TOTAL = 6
+DATE = "2026-10-15"
 
-    # ---------------- ① 外装 ----------------
-    s.place(-83.0, 124.0)
+
+def new_page(no, subtitle, assembly=False):
+    s = Sheet(subtitle)
+    note = ("単位 mm / 縮尺 1:1（断面図の厚み方向は誇張）/ A4横" if assembly
+            else "単位 mm / 縮尺 1:1（実寸）/ A4横 / " + DATE)
+    box = s.frame(f"{no}/{PAGE_TOTAL}  {subtitle}", note)
+    return s, box
+
+
+PATTERN_LEGEND = [
+    ("切断線", None, "切断線"),
+    ("縫い線", None, "縫い線"),
+    ("山折り", None, "山折り"),
+    ("谷折り", None, "谷折り・折り返し"),
+    ("中心線", None, "中心（折り）"),
+    ("貼り位置", None, "貼り位置"),
+    ("ファスナー", "HIDDEN", "ファスナーテープ"),
+    ("芯材・裏地", None, "芯材・裏地の線"),
+]
+
+
+def draw_body_pattern(s):
+    """① 外装（⑦芯材・⑥裏地の切り線入り）。place 済みの座標に描く"""
     s.path(body_outline(), "切断線")
     s.path(perimeter_stitch(), "縫い線")
     s.path([L((0, -4), (0, H + 4))], "中心線")
     s.path([L((UL, 0), (UL, H))], "貼り位置")
     s.path([L((-W, A_EDGE_V), (-A_BOT_U, H)), L((-W, B_EDGE_V), (-B_BOT_U, H))], "貼り位置")
+    s.path(core_outline(), "芯材・裏地")
+    s.path(lining_outline(), "芯材・裏地", "HIDDEN")
     s.ltext((-W / 2, 30), "① 外装  ×1", 6.0, align="c")
     s.ltext((-W / 2, 38), "牛革 1.0mm（内側＝床面から見た図）", 3.0, align="c")
-    s.path(core_outline(), "芯材・裏地")
-    s.ltext((-W + SM + CORE_IN + 2, SM + CORE_IN + 4.5), "⑧芯材（左側だけ）はこの線で切る", 2.4)
-    s.ltext((W / 2 + 6, 78), "⑦裏地布：この型紙の0.5mm内側で", 2.6, align="c")
-    s.ltext((W / 2 + 6, 82.5), "切り、内側全面に貼る（両側）", 2.6, align="c")
     s.ltext((-W / 2, 44), "←  革の伸びにくい方向  →", 3.0, align="c")
     s.ltext((1.2, 36), "中心（折り線）", 2.5, rot=-90)
     s.ltext((-W + 22, 64), "← ④ベルト貼り位置", 2.5)
-    s.ltext((UL + 2, 30), "右側ユニット（②③⑥）の左端", 2.5)
-    s.ltext((W / 2 + 6, 50), "ユニットは右辺と下辺で縫い付ける", 3.0, align="c")
-    s.ltext((W / 2 + 6, 55), "（接着は縫い代だけ）", 3.0, align="c")
-    s.ltext((W / 2 + 6, 61), "上辺・左辺は開いていて", 3.0, align="c")
-    s.ltext((W / 2 + 6, 66), "下にお札の右半分を入れる", 3.0, align="c")
+    s.ltext((-W + SM + CORE_IN + 2, SM + CORE_IN + 4.5), "⑦芯材（左側だけ）は黄色の実線で切る", 2.4)
+    s.ltext((UL + 2, 30), "右側ユニット（②③⑤）の左端", 2.5)
+    s.ltext((W / 2 + 6, 48), "ユニットは右辺と下辺で縫い付ける", 3.0, align="c")
+    s.ltext((W / 2 + 6, 53), "（接着は縫い代だけ）", 3.0, align="c")
+    s.ltext((W / 2 + 6, 59), "上辺・左辺は開いていて", 3.0, align="c")
+    s.ltext((W / 2 + 6, 64), "下にお札の右半分を入れる", 3.0, align="c")
+    s.ltext((W / 2 + 6, 77), "⑥裏地布：黄色の破線（0.5mm内側）で", 2.6, align="c")
+    s.ltext((W / 2 + 6, 81.5), "切り、内側全面に貼る（両側）", 2.6, align="c")
     s.ldim_h(-W, 0, W, 0, -7, fmt(2 * W))
     s.ldim_v(-W, 0, -W, H, -W - 8, fmt(H))
     s.ldim_v(-W, 0, -W, A_EDGE_V, -W - 3.5)
@@ -841,20 +860,36 @@ def draw_pattern_sheet():
     s.ldim_h(UL, H, W, H, H + 5)
     s.ltext((-W + 1.0, 7.5), "R6", 2.5)
 
+
+def page1():
+    s, (x0, y0, x1, y1) = new_page(1, "型紙 ① 外装（⑥裏地・⑦芯材）")
+    s.place(-14.0, 72.0)
+    draw_body_pattern(s)
+    s.place(0, 0)
+    s.text((x1 - 37, y1 - 6), "凡例", 3.4)
+    s.legend(x1 - 37, y1 - 13, PATTERN_LEGEND, h=2.2, gap=4.4)
+    s.note_lines(x0 + 4, -42.0, [
+        "・⑥裏地は布（ナイロンツイル0.2mm等）。①と同じ形を0.5mm内側で切る（または2～3mm大きく切って、貼ってから切り落とす。3/6参照）",
+        "・⑦芯材はボンテックス0.4mm。左側だけ。縫い線から2mm、中心から16mm離して、縫い目と折り目にかけない",
+        "・貼る順番：①の床面に⑦を貼る → ⑥を全面に貼る → ④ベルトを⑥の上に貼る",
+    ], h=2.4, gap=4.0)
+    s.scale_bar(x0 + 8, y0 + 14)
+    return s
+
+
+def page2():
+    s, (x0, y0, x1, y1) = new_page(2, "型紙 ③ 前胴（立体）・② 台座")
     # ---------------- ③ 前胴（立体の展開図） ----------------
     xl, xr = FL - G - T, FR + G + T
     yb = KB + CARD_DY + G + T
-    s.place(32.0 - xl, 124.0 + ZT)
+    s.place(-126.0 - xl, 78.0 + ZT)
     s.path(front_flat_outline(), "切断線")
+    s.path(front_flat_window(), "切断線")
     s.path(front_flat_mountain(), "山折り")
     s.path(front_flat_valley(), "谷折り")
-    s.path(front_flat_window(), "切断線")
     s.path(front_flat_stitch(), "縫い線")
     s.path(zip_tape_on_front(), "ファスナー", "HIDDEN")
     s.path(front_lining_flat(), "芯材・裏地")
-    s.ltext((u_on_D(88) + 3, 88 + CARD_DY), "⑨裏地（布）", 2.2)
-    s.ltext((u_on(CW_A, 80) - 1, 80 + CARD_DY), "窓（くり抜き）", 2.2, rot=-45)
-    s.ltext((FR - 9, KB + CARD_DY - 2), "角押さえ", 2.0)
     s.ltext(((FL + FR) / 2, 22.5), "小銭入れの面", 3.0, align="c")
     s.ltext(((FL + FR) / 2, 27.5), "上端にファスナー（裏に下側テープ）", 2.3, align="c")
     s.ltext((FL + 1.0, ZT + ZIP_TAPE_IN + 3.0), "緑破線＝テープ", 2.0)
@@ -864,10 +899,14 @@ def draw_pattern_sheet():
     s.ltext((70, 80), "カードポケットの面", 3.0, align="c")
     s.ltext((70, 84.5), "（6枚程度）", 2.5, align="c")
     s.ltext((u_on_D(78) + 3.0, 78 + CARD_DY - 10), "差込口", 2.4, rot=-73)
+    s.ltext((u_on_D(88) + 3, 88 + CARD_DY), "⑧裏地（布）", 2.2)
+    s.ltext((u_on(CW_A, 80) - 1, 80 + CARD_DY), "窓（くり抜き）", 2.2, rot=-45)
+    s.ltext((FR - 9, KB + CARD_DY - 2), "角押さえ", 2.0)
     s.ltext((xl + 0.6, 20), "タブ", 2.0, rot=-90)
     s.ltext((FL - G + 0.6, 20), "壁", 2.0, rot=-90)
     s.ltext((FR + 0.6, 20), "壁", 2.0, rot=-90)
     s.ltext((FR + G + 0.6, 22), "タブ", 2.0, rot=-90)
+    s.ltext((FR - 9.5, CB - 1.0), "R1.5", 1.8)
     s.ldim_h(xl, ZT, xr, ZT, ZT - 10, fmt(xr - xl))
     s.ldim_h(xl, ZT, FL - G, ZT, ZT - 5)
     s.ldim_h(FL - G, ZT, FL, ZT, ZT - 5)
@@ -893,60 +932,9 @@ def draw_pattern_sheet():
     s.ldim_h(u_on(CW_A, KB), yb, u_on(CW_B, KB), yb, yb + 5)
     s.ldim_h(u_on(CW_B, KB), yb, FR, yb, yb + 5)
     s.ldim_h(FR, yb, xr, yb, yb + 5)
-    s.ltext((FR - 9.5, CB - 1.0), "R1.5", 1.8)
-
-    # ---------------- 凡例・注意（右上の列） ----------------
-    s.place(0, 0)
-    lx, ly = 150.0, 128.0
-    s.text((lx, ly - 3), "凡例", 4.0)
-    s.legend(lx, ly - 10, [
-        ("切断線", None, "切断線"),
-        ("縫い線", None, "縫い線（3mmピッチ）"),
-        ("山折り", None, "山折り（面と壁の境）"),
-        ("谷折り", None, "谷折り・折り返し"),
-        ("中心線", None, "中心（外装の折り）"),
-        ("貼り位置", None, "貼り位置ガイド"),
-        ("ファスナー", "HIDDEN", "ファスナーテープ"),
-        ("芯材・裏地", None, "芯材・裏地の切り線"),
-    ], h=2.6, gap=4.8)
-    s.note_lines(lx, ly - 50, [
-        "③は立体の型紙（壁＝マチ6mm）。",
-        "①は床面から、ほかは表から見た図。",
-        "旧⑤カード押さえは③に一体化。",
-    ], h=2.3, gap=3.7)
-    tx, ty = lx, ly - 64
-    s.text((tx, ty), "部品表", 3.4)
-    rows = [
-        ("No.", "部品名", "数", "素材・厚み"),
-        ("①", "外装", "1", "牛革1.0"),
-        ("②", "台座", "1", "牛革0.8"),
-        ("③", "前胴（立体）", "1", "牛革0.6～0.8"),
-        ("④", "札押さえベルト", "1", "牛革0.8"),
-        ("⑥a", "裏ポケット布（奥）", "1", "布0.2"),
-        ("⑥b", "裏ポケット布（手前）", "1", "布0.2"),
-        ("⑦", "裏地（①の内側全面）", "1", "布0.2"),
-        ("⑧", "芯材（左側だけ）", "1", "ボンテックス0.4"),
-        ("⑨", "裏地（③カード面の裏）", "1", "布0.2"),
-    ]
-    cols = [tx, tx + 5.5, tx + 29.5, tx + 33, tx + 50]
-    rh = 4.0
-    top = ty - 1.8
-    for i, r in enumerate(rows):
-        yy = top - (i + 1) * rh
-        for j, c in enumerate(r):
-            s.text((cols[j] + 0.6, yy + 1.2), c, 2.0)
-    for i in range(len(rows) + 1):
-        s.line((cols[0], top - i * rh), (cols[-1], top - i * rh), "図枠")
-    for c in cols:
-        s.line((c, top), (c, top - len(rows) * rh), "図枠")
-    s.note_lines(tx, top - len(rows) * rh - 4.5, [
-        "副資材：3号コイルファスナー（務歯81／",
-        "テープ約92）、ロウ引き糸0.45～0.55 約5m",
-        "印刷後、左下のスケールで倍率を確認",
-    ], h=2.1, gap=3.4)
 
     # ---------------- ② 台座 ----------------
-    s.place(-190.0 - UL, -6.0)
+    s.place(2.0 - UL, 80.0)
     s.path(base_outline(), "切断線")
     s.path(front_proj_outline(), "貼り位置")
     s.path(front_proj_walls(), "貼り位置")
@@ -958,53 +946,129 @@ def draw_pattern_sheet():
     s.path(unit_attach_stitch(R_OUT + 0.5), "縫い線")
     s.ltext((64, 63), "② 台座 ×1", 4.5, align="c")
     s.ltext((64, 68.5), "牛革 0.8mm", 2.6, align="c")
-    s.ltext((64, 73.5), "裏に⑥a・⑥bを重ねる", 2.4, align="c")
+    s.ltext((64, 73.5), "裏に⑤a・⑤bを重ねる", 2.4, align="c")
     s.ltext((64, 22), "上側テープ（表に貼る）", 2.3, align="c")
+    s.ltext((64, 88), "桃色破線＝③の貼り位置", 2.2, align="c")
     s.ldim_h(UL, ZT, W, ZT, ZT - 5, fmt(W - UL))
     s.ldim_v(UL, ZT, UL, H, UL - 5, fmt(H - ZT))
 
-    # ---------------- ⑥a / ⑥b 裏ポケット布 ----------------
+    s.place(0, 0)
+    s.text((x1 - 37, y1 - 6), "凡例", 3.4)
+    s.legend(x1 - 37, y1 - 13, PATTERN_LEGEND, h=2.2, gap=4.4)
+    s.note_lines(x1 - 37, y1 - 54, [
+        "③は立体の型紙。",
+        "タブを②に縫い、",
+        "壁を手前に折り",
+        "上げる（マチ6mm）。",
+        "折り線の床面に",
+        "溝を入れるか漉く。",
+        "",
+        "⑧（黄線）は",
+        "カード面の裏に",
+        "貼る布。",
+        "",
+        "ファスナー：",
+        "3号コイル",
+        "務歯81mm",
+        "テープ約92mm",
+        "内側へ12mm残す",
+    ], h=2.2, gap=3.6)
+    s.scale_bar(x0 + 8, y0 + 14)
+    return s
+
+
+FABRIC_NOTES = [
+    "⑥裏地（外装の内側全面）の貼り方と仕上げ",
+    "1. 布は①の型紙より2～3mm大きく切る（型紙の黄色破線＝0.5mm内側で切ってもよい）",
+    "2. ①の床面の左側に⑦芯材を貼る。芯の縁は軽くやすって段差をなだらかにする",
+    "3. ①（芯の上も）と布の両方にゴム系接着剤を薄く塗り、半乾きで中央から外へ空気を抜きながら貼る",
+    "4. 中心の折り目は、①を閉じる方向に軽く曲げた状態で貼る（閉じたときにシワが出にくい）",
+    "5. 乾いたら①の縁に沿って布を切り落とす。刃を少し内側に倒すと、布がコバより0.3～0.5mm内側で切れる",
+    "6. 布の切り口はほつれ止め（ナイロンはライター等で軽く溶かす／ほつれ止め液）",
+    "7. 菱目打ちは①と布を重ねたまま打ち、そのまま縫う（布は縫い線の外側に約2.5mm残る）",
+    "8. コバは革だけを磨く（布は内側に下がっているので削れない）。コバ塗料を使うと段差も目立たない",
+    "※ ⑤a・⑤b・⑧も同じ要領。⑤の入口は折り返し代6mmを内側へ折って貼る",
+]
+
+
+def page3():
+    s, (x0, y0, x1, y1) = new_page(3, "型紙 ⑤a・⑤b 裏ポケット布・④ ベルト・部品表")
+    # ---------------- ⑤a / ⑤b 裏ポケット布 ----------------
     for idx, (ox, label, depth_note) in enumerate([
-        (-90.0, "⑥a 裏ポケット布（奥） ×1", "②のすぐ裏"),
-        (10.0, "⑥b 裏ポケット布（手前） ×1", "⑥aの上に重ねる"),
+        (-128.0, "⑤a 裏ポケット布（奥） ×1", "②のすぐ裏"),
+        (-26.0, "⑤b 裏ポケット布（手前） ×1", "⑤aの上に重ねる"),
     ]):
         tl = pocket_top_v(idx, UL + FABRIC_INSET)
         tr = pocket_top_v(idx, W - FABRIC_INSET)
         tm = pocket_top_v(idx, 60)
-        s.place(ox - UL, -8.0 + min(tl, tr) - FOLD_ALLOW)
+        s.place(ox - UL - FABRIC_INSET, 82.0 + min(tl, tr) - FOLD_ALLOW)
         s.path(pocket_outline(idx), "切断線")
         s.path(pocket_fold(idx), "谷折り")
         s.path(pocket_top_stitch(idx), "縫い線", "HIDDEN")
         s.path(left_seam(tl + 1.5), "縫い線")
         s.path(unit_attach_stitch(tr + 1.5), "縫い線")
         cy = (tm + H) / 2
-        s.ltext((60, cy - 6), label, 3.6, align="c")
-        s.ltext((60, cy), "布 0.2mm（ナイロンツイル等）", 2.5, align="c")
-        s.ltext((60, cy + 5), depth_note, 2.4, align="c")
-        s.ltext((60, tm - 2.0), "↓折り返し代（内側へ折って貼る）", 2.0, align="c", rot=-math.degrees(math.atan2(tr - tl, W - UL)))
+        s.ltext((60, cy - 6), label, 3.4, align="c")
+        s.ltext((60, cy), "布 0.2mm（ナイロンツイル等）", 2.4, align="c")
+        s.ltext((60, cy + 5), depth_note, 2.3, align="c")
+        s.ltext((60, cy + 10), f"深さ 左{fmt(H - SM - pocket_top_v(idx, UL))}／右{fmt(H - SM - pocket_top_v(idx, W))}mm", 2.3, align="c")
+        s.ltext((60, tm - 2.0), "↓折り返し代（内側へ折って貼る）", 2.0, align="c",
+                rot=-math.degrees(math.atan2(tr - tl, W - UL)))
         s.ltext((60, tm + 7), "押さえ縫い（任意）", 2.0, align="c")
         s.ldim_v(UL + FABRIC_INSET, tl - FOLD_ALLOW, UL + FABRIC_INSET, tl, UL - 4)
         s.ldim_v(UL + FABRIC_INSET, tl, UL + FABRIC_INSET, H - FABRIC_INSET, UL - 4)
-        s.ltext((60, cy + 10), f"深さ 左{fmt(H - SM - pocket_top_v(idx, UL))}／右{fmt(H - SM - pocket_top_v(idx, W))}mm", 2.3, align="c")
-        s.ldim_h(UL + FABRIC_INSET, H - FABRIC_INSET, W - FABRIC_INSET, H - FABRIC_INSET,
-                 H + 4.5)
+        s.ldim_h(UL + FABRIC_INSET, H - FABRIC_INSET, W - FABRIC_INSET, H - FABRIC_INSET, H + 4.5)
 
     # ---------------- ④ 札押さえベルト ----------------
-    s.place(118.0 + W, -8.0 + A_EDGE_V)
+    s.place(80.0 + W, 82.0 + A_EDGE_V)
     s.path(band_outline(), "切断線")
     s.path(band_stitch(), "縫い線")
-    s.ltext((-W, H + 13), "④ 札押さえベルト ×1", 3.0)
-    s.ltext((-W, H + 17.5), "牛革 0.8mm／斜め2辺は先に磨く", 2.3)
+    s.ltext((-W + 20, A_EDGE_V + 6), "④ 札押さえベルト ×1", 3.0)
+    s.ltext((-W + 22, A_EDGE_V + 10.5), "牛革 0.8mm", 2.3)
+    s.ltext((-W + 24, A_EDGE_V + 14.5), "斜め2辺は先に磨く", 2.3)
     s.ldim_v(-W, A_EDGE_V, -W, B_EDGE_V, -W - 4)
     s.ldim_h(-B_BOT_U, H, -A_BOT_U, H, H + 5)
 
+    # ---------------- 部品表 ----------------
+    s.place(0, 0)
+    tx, ty = 76.0, 26.0
+    s.text((tx, ty), "部品表", 3.4)
+    rows = [
+        ("No.", "部品名", "数", "素材・厚み"),
+        ("①", "外装", "1", "牛革1.0"),
+        ("②", "台座", "1", "牛革0.8"),
+        ("③", "前胴（立体）", "1", "牛革0.6～0.8"),
+        ("④", "札押さえベルト", "1", "牛革0.8"),
+        ("⑤a", "裏ポケット布（奥）", "1", "布0.2"),
+        ("⑤b", "裏ポケット布（手前）", "1", "布0.2"),
+        ("⑥", "裏地（①の内側全面）", "1", "布0.2"),
+        ("⑦", "芯材（左側だけ）", "1", "ボンテックス0.4"),
+        ("⑧", "裏地（③カード面の裏）", "1", "布0.2"),
+    ]
+    cols = [tx, tx + 6, tx + 32, tx + 36, tx + 59]
+    rh = 4.2
+    top = ty - 2.0
+    for i, r in enumerate(rows):
+        yy = top - (i + 1) * rh
+        for j, c in enumerate(r):
+            s.text((cols[j] + 0.6, yy + 1.3), c, 2.1)
+    for i in range(len(rows) + 1):
+        s.line((cols[0], top - i * rh), (cols[-1], top - i * rh), "図枠")
+    for c in cols:
+        s.line((c, top), (c, top - len(rows) * rh), "図枠")
+    s.note_lines(tx, top - len(rows) * rh - 5, [
+        "副資材：3号コイルファスナー",
+        "（務歯81／テープ約92mm）、",
+        "ロウ引き糸0.45～0.55mm 約5m、",
+        "ゴム系接着剤、ほつれ止め",
+    ], h=2.2, gap=3.6)
+
+    s.text((x0 + 4, -14.0), FABRIC_NOTES[0], 3.2)
+    s.note_lines(x0 + 4, -20.5, FABRIC_NOTES[1:], h=2.2, gap=3.5)
     s.scale_bar(x0 + 8, y0 + 14)
     return s
 
 
-# =============================================================================
-# 組立図シート
-# =============================================================================
 class Sec:
     """断面模式図用。a=横方向の位置[mm]、k=層の高さ（厚み方向は誇張）"""
 
@@ -1032,15 +1096,9 @@ K_BODY, K_CORE, K_LIN, K_BILL, K_PB, K_PA, K_BASE, K_TAB, K_FLIN, K_FACE = (
     0.0, 0.3, 0.6, 1.0, 1.5, 2.05, 2.6, 2.95, 5.15, 5.4)
 
 
-def draw_assembly_sheet():
-    s = Sheet("組立図")
-    x0, y0, x1, y1 = s.frame("組立図（完成状態）・重なり確認・断面模式図",
-                             "単位 mm / 縮尺 1:1（断面図の厚み方向は誇張）/ A3横")
-
-    # ---------------- 展開図（完成状態を内側から） ----------------
-    OX, OY = -80.0, 120.0
-    s.place(OX, OY)
-    s.text((OX - W, OY + 13), "完成状態を開いて内側から見た図", 4.0)
+def page4():
+    s, (x0, y0, x1, y1) = new_page(4, "組立図：完成状態を開いて内側から見た図", assembly=True)
+    s.place(-14.0, 72.0)
     s.path(body_outline(), "切断線")
     s.path(perimeter_stitch(), "縫い線")
     s.path([L((0, -4), (0, H + 4))], "中心線")
@@ -1061,17 +1119,16 @@ def draw_assembly_sheet():
     s.ltext((-W / 2 - 2, 45), "お札（折らずに入れる）", 3.0, align="c")
     s.ltext((-W / 2 - 2, 50), "右半分は右側ユニットの下へ", 2.5, align="c")
     s.ltext((-W / 2 - 2, 54.5), "左下の角をベルトに差し込む", 2.5, align="c")
-    s.ltext((-W / 2 - 2, 12), "黄破線＝⑧芯材（⑦裏地の下・左側だけ）", 2.4, align="c")
-    s.ltext((-W + 14, 93), "④ベルト", 2.4)
+    s.ltext((-W / 2 - 2, 12), "黄破線＝⑦芯材（⑥裏地の下・左側だけ）", 2.4, align="c")
+    s.ltext((-A_BOT_U + 4, 93), "← ④ベルト", 2.4)
     s.ltext((58, 12.5), "小銭入れ（マチ6）", 2.6, align="c")
     s.ltext((70, 58), "カード 6枚程度", 3.0, align="c")
-    s.ltext((70, 62.5), "（マチ6・面の裏に⑨裏地）", 2.3, align="c")
+    s.ltext((70, 62.5), "（マチ6・面の裏に⑧裏地）", 2.3, align="c")
     s.ltext((FL - 1, -1.2), "ファスナー（上端）", 2.3, align="l")
     s.ltext((u_on_D(80) - 12.0, 86), "差込口", 2.4)
     s.ltext((u_on(CW_A, 80) + 2.5, 82), "窓", 2.5)
     s.ltext((FR - 7.5, KB - 2.5), "角", 2.2)
     s.ltext((UL - 0.8, 40), "②の裏に布ポケット2段", 2.1, rot=-90, valign="t")
-    # 寸法
     s.ldim_h(-W, 0, W, 0, -9, f"{fmt(2 * W)}（閉じると {fmt(W)}×{fmt(H)}）")
     s.ldim_h(0, 0, UL, 0, -3.5)
     s.ldim_v(-W, 0, -W, H, -W - 4, fmt(H))
@@ -1091,35 +1148,32 @@ def draw_assembly_sheet():
     s.ldim_h(u_on_D(H), H, u_on(CW_A, KB), KB, H + 5)
     s.ldim_h(u_on(CW_A, KB), KB, u_on(CW_B, KB), KB, H + 5)
     s.ldim_h(u_on(CW_B, KB), KB, FR, KB, H + 5)
+    s.place(0, 0)
+    s.text((x1 - 33, y1 - 6), "凡例", 3.4)
+    s.legend(x1 - 33, y1 - 13, [
+        ("切断線", None, "革の縁"),
+        ("縫い線", None, "縫い線"),
+        ("ファスナー", None, "ファスナー"),
+        ("カード", None, "カード"),
+        ("お札", None, "お札"),
+        ("小銭", None, "小銭"),
+        ("芯材・裏地", "HIDDEN", "⑦芯材"),
+    ], h=2.2, gap=4.4)
+    s.note_lines(x0 + 4, -44.0, [
+        "・右側ユニット（②台座＋③前胴＋⑤a・⑤b）は外装の右辺と下辺だけで縫い付ける。上辺と左辺は開いている",
+        "・③は高さ6mmの箱（小銭入れ・カードポケット）。ファスナーは最上部で、閉じたままでも開けられる",
+        "・窓は④ベルトと左右対称（45°）で、ベルトより両側1.5mm広い。窓の下の角押さえは③と一体",
+        "・カードは左の差込口から入れ、窓に指をかけて左へ滑らせて出す",
+    ], h=2.3, gap=3.9)
+    return s
 
-    # ---------------- 重なり確認（右半分＋左のベルトを折り返し） ----------------
-    CX, CY = 66.0, 120.0
-    s.place(CX, CY)
-    s.text((CX - 2, CY + 13), "閉じたときの重なり（右半分）", 4.0)
-    s.path(body_right_half(), "切断線")
-    s.path([L((0, -4), (0, H + 4))], "中心線")
-    s.path([L((UL, CB), (UL, H))], "切断線")
-    s.path(front_proj_outline(), "切断線")
-    s.path(front_proj_walls(), "切断線")
-    s.path(front_proj_window(), "切断線")
-    s.path(card_rect(), "カード")
-    s.path(mirror_u(band_outline()), "お札", "HIDDEN")
-    s.ltext((W / 2 + 6, 44), "桃色破線＝左の④ベルトを", 2.5, align="c")
-    s.ltext((W / 2 + 6, 48.5), "中心で折り返した位置", 2.5, align="c")
-    s.ltext((W / 2 + 6, 54), "→ 窓の中に収まる", 2.5, align="c")
-    s.ltext((W / 2 + 6, 58.5), f"（すき間は両側 {fmt(WIN_CLEAR)}mm）", 2.5, align="c")
-    s.ltext((W / 2 + 6, 66), "窓の下の角押さえ（③と一体）で", 2.5, align="c")
-    s.ltext((W / 2 + 6, 70.5), "カードの右下が飛び出さない", 2.5, align="c")
-    s.ldim_v(FR, v_on(CW_A, FR), FR, v_on(CW_B, FR), W + 5,
-             "窓 " + fmt(v_on(CW_B, FR) - v_on(CW_A, FR)))
-    s.ldim_v(FR, v_on(C_A, FR), FR, v_on(C_B, FR), W + 11,
-             "④ " + fmt(v_on(C_B, FR) - v_on(C_A, FR)))
 
-    # ---------------- 断面模式図 ----------------
+def page5():
+    s, (x0, y0, x1, y1) = new_page(5, "組立図：断面模式図", assembly=True)
     fab0, fab1 = UL + FABRIC_INSET, W - FABRIC_INSET
+    OX = -14.0
 
     def base_layers(sc, v):
-        """外装・芯・裏地・お札・裏ポケット・台座（v の高さの断面）"""
         sc.h(-W, W, K_BODY)
         c = core_outline_box()
         if c[2] <= v <= c[3]:
@@ -1137,8 +1191,8 @@ def draw_assembly_sheet():
 
     # A-A：小銭入れ
     va = 25.0
-    sa = Sec(s, OX, -18.0)
-    s.text(sa.P(-W, K_FACE + 1.6), f"断面 A-A（上端から {fmt(va)}mm：小銭入れ）", 3.3)
+    sa = Sec(s, OX, 62.0)
+    s.text(sa.P(-W, K_FACE + 1.6), f"断面 A-A（上端から {fmt(va)}mm：小銭入れ）", 3.2)
     base_layers(sa, va)
     for it in [(UL, FL, K_TAB), (FR, W, K_TAB), (FL, FR, K_FACE)]:
         sa.h(*it)
@@ -1150,10 +1204,10 @@ def draw_assembly_sheet():
                         (UL + SM, K_BASE - 0.4, K_TAB + 0.4)]:
         sa.v(a, k0, k1, "縫い線")
     for (a, k, txt, al) in [
-        (-W + 1, -1.5, "①外装＋⑧芯（左）＋⑦裏地", "l"),
+        (-W + 1, -1.5, "①外装＋⑦芯（左）＋⑥裏地", "l"),
         (-40, K_BILL + 0.2, "お札", "c"),
         (40, K_BILL + 0.2, "お札の右半分（ユニットの下）", "c"),
-        (90, K_PA + 0.15, "⑥a", "c"),
+        (W + 1, K_PA - 0.2, "⑤a", "l"),
         (UL - 1, K_BASE + 0.1, "②", "r"),
         (60, K_TAB + 0.9, "小銭", "c"),
         (60, K_FACE + 0.3, "③小銭入れ（高さ6）", "c"),
@@ -1162,8 +1216,8 @@ def draw_assembly_sheet():
 
     # B-B：カード・窓・角押さえ・ベルト
     vb = 85.0
-    sb = Sec(s, OX, -52.0)
-    s.text(sb.P(-W, K_FACE + 1.6), f"断面 B-B（上端から {fmt(vb)}mm：カード・窓・ベルト）", 3.3)
+    sb = Sec(s, OX, 24.0)
+    s.text(sb.P(-W, K_FACE + 1.6), f"断面 B-B（上端から {fmt(vb)}mm：カード・窓・ベルト）", 3.2)
     base_layers(sb, vb)
     c0, c1 = FR - LEATHER_T - 0.5 - CARD_W, FR - LEATHER_T - 0.5
     sb.h(-u_on(C_B, vb), -u_on(C_A, vb), K_BILL + 0.5)
@@ -1180,14 +1234,14 @@ def draw_assembly_sheet():
         sb.v(uu, -0.6, K_FACE + 0.8, "中心線", "HIDDEN")
         sb.v(-uu, -0.6, K_FACE + 0.8, "中心線", "HIDDEN")
     for (a, k, txt, al) in [
-        (-W + 1, -1.5, "①＋⑧＋⑦", "l"),
+        (-W + 1, -1.5, "①＋⑦＋⑥", "l"),
         (-40, K_BILL + 0.2, "お札", "c"),
         (-(u_on(C_A, vb) + u_on(C_B, vb)) / 2, K_BILL + 0.8, "④", "c"),
-        (UL - 1, K_PB - 0.35, "⑥b", "r"),
-        (UL - 1, K_PA - 0.05, "⑥a", "r"),
+        (UL - 1, K_PB - 0.35, "⑤b", "r"),
+        (UL - 1, K_PA - 0.05, "⑤a", "r"),
         (UL - 1, K_BASE + 0.3, "②", "r"),
         (30, K_TAB + 0.6, "カード×6", "c"),
-        ((u_on_D(vb) + u_on(CW_A, vb)) / 2, K_FACE + 0.3, "③＋⑨裏地", "c"),
+        ((u_on_D(vb) + u_on(CW_A, vb)) / 2, K_FACE + 0.3, "③＋⑧裏地", "c"),
         ((u_on(CW_A, vb) + u_on(CW_B, vb)) / 2, K_FACE + 0.3, "窓", "c"),
         ((u_on(CW_B, vb) + FR) / 2, K_FACE + 0.3, "角", "c"),
     ]:
@@ -1196,8 +1250,8 @@ def draw_assembly_sheet():
            f"※ 水色破線：閉じたときの④ベルトの位置。窓とのすき間は両側 {fmt(WIN_CLEAR)}mm", 2.3)
 
     # C-C：縦断面（u=60）
-    sc = Sec(s, -185.0, -98.0, 3.4)
-    s.text(sc.P(0, K_FACE + 1.6), "断面 C-C（中心から60mmの縦断面：左が上端）", 3.3)
+    sc = Sec(s, -126.0, -26.0, 3.4)
+    s.text(sc.P(0, K_FACE + 1.6), "断面 C-C（中心から60mmの縦断面：左が上端）", 3.2)
     sc.h(0, H, K_BODY)
     sc.h(FABRIC_INSET, H - FABRIC_INSET, K_LIN, "芯材・裏地", "HIDDEN")
     sc.h(H - SM - 0.5 - BILL_H, H - SM - 0.5, K_BILL, "お札", "CONTINUOUS")
@@ -1223,26 +1277,26 @@ def draw_assembly_sheet():
                         (SEP_V, K_BASE - 0.4, K_TAB + 0.4), (H - SM, -0.4, K_TAB + 0.4),
                         (SM, -0.4, K_LIN + 0.4)]:
         sc.v(a, k0, k1, "縫い線")
-    sc.t(-1, K_FACE + 0.3, "ファスナー", 2.1, "r")
-    sc.t(17.5, K_FACE + 0.3, "小銭入れ", 2.1, "c")
-    sc.t(SEP_V, K_FACE + 0.3, "仕切り", 2.1, "c")
-    sc.t(66, K_FACE + 0.3, "カードポケット（面の裏に⑨）", 2.1, "c")
-    sc.t(66, K_TAB + 0.6, "カード", 2.1, "c")
+    sc.t(-1, K_FACE + 0.3, "ファスナー", 2.0, "r")
+    sc.t(17.5, K_FACE + 0.3, "小銭入れ", 2.0, "c")
+    sc.t(SEP_V, K_FACE + 0.3, "仕切り", 2.0, "c")
+    sc.t(66, K_FACE + 0.3, "カードポケット（面の裏に⑧）", 2.0, "c")
+    sc.t(66, K_TAB + 0.6, "カード", 2.0, "c")
     sc.t(10.5, K_BILL + 0.15, "お札", 2.0, "c")
     sc.t(H + 1, K_BASE - 0.25, "②", 1.9, "l")
-    sc.t(H + 1, K_PA - 0.25, "⑥a", 1.9, "l")
-    sc.t(H + 1, K_PB - 0.25, "⑥b", 1.9, "l")
-    sc.t(H + 1, K_LIN - 0.25, "⑦", 1.9, "l")
+    sc.t(H + 1, K_PA - 0.25, "⑤a", 1.9, "l")
+    sc.t(H + 1, K_PB - 0.25, "⑤b", 1.9, "l")
+    sc.t(H + 1, K_LIN - 0.25, "⑥", 1.9, "l")
     sc.t(H + 1, K_BODY - 0.45, "①", 1.9, "l")
-    sc.t(pocket_top_v(0, 60) - 6, -1.3, "↑⑥a・⑥bの上端（斜め・上から入れる2段）", 2.0, "l")
+    sc.t(pocket_top_v(0, 60) - 6, -1.3, "↑⑤a・⑤bの上端（斜め・上から入れる2段）", 2.0, "l")
     sc.t(H + 7, K_BILL, "← 下辺は全層まとめて縫う", 2.0, "l")
 
     # 閉じた状態を上から見た図（模式）
-    tv = Sec(s, -180.0, -133.0, 2.2)
-    s.text(tv.P(-5, 10.8), "閉じた状態を上から見た図（模式）", 3.3)
+    tv = Sec(s, -124.0, -80.0, 2.0)
+    s.text(tv.P(-2, 10.8), "閉じた状態を上から見た図（模式）", 3.2)
     tv.h(0, W, 0)
     tv.h(0, W, 8.6)
-    s.arc(tv.P(0, 4.3), 4.3 * 2.2, 90, 270, "断面図")
+    s.arc(tv.P(0, 4.3), 4.3 * 2.0, 90, 270, "断面図")
     tv.h(UL, W, K_BASE - 0.6)
     tv.box(FL, FR, K_BASE - 0.6, K_FACE - 0.6, "ファスナー")
     tv.h(FL, FR, K_FACE - 0.6)
@@ -1251,46 +1305,87 @@ def draw_assembly_sheet():
     tv.h(UL, W, K_PB - 0.6, "断面図", "HIDDEN")
     tv.h(0, BILL_U0 + BILL_W, 0.35, "お札", "CONTINUOUS")
     tv.h(0, -BILL_U0, 7.6, "お札", "CONTINUOUS")
-    s.arc(tv.P(0, 4.0), 3.6 * 2.2, 90, 270, "お札")
-    tv.t(W + 4, 6.0, "ファスナーは上端に出ているので、", 2.6, "l")
-    tv.t(W + 4, 4.2, "財布を閉じたまま開けて小銭を出せる。", 2.6, "l")
-    tv.t(W + 4, 2.4, "（開けて両端を軽く押すと口が開く）", 2.4, "l")
-    tv.t(W / 2, 8.9, "外装（左半分・芯と裏地入り）", 2.1, "c")
-    tv.t(W / 2, -1.8, "外装（右半分）", 2.1, "c")
-    tv.t(FL + 10, K_FACE + 0.1, "引手", 2.1, "l")
+    s.arc(tv.P(0, 4.0), 3.6 * 2.0, 90, 270, "お札")
+    tv.t(W + 4, 6.0, "ファスナーは上端に出ているので、", 2.4, "l")
+    tv.t(W + 4, 4.0, "閉じたまま開けて小銭を出せる", 2.4, "l")
+    tv.t(W + 4, 2.0, "（両端を軽く押すと口が開く）", 2.2, "l")
+    tv.t(W / 2, 8.9, "外装（左半分・芯と裏地入り）", 2.0, "c")
+    tv.t(W / 2, -1.9, "外装（右半分）", 2.0, "c")
+    tv.t(FL + 10, K_FACE + 0.1, "引手", 2.0, "l")
+    return s
 
-    # ---------------- 仕様・手順 ----------------
+
+def page6():
+    s, (x0, y0, x1, y1) = new_page(6, "組立図：重なり確認・仕様・作り方", assembly=True)
+    CX, CY = -128.0, 76.0
+    s.place(CX, CY)
+    s.text((CX - 2, CY + 9), "閉じたときの重なり（右半分）", 3.4)
+    s.path(body_right_half(), "切断線")
+    s.path([L((0, -4), (0, H + 4))], "中心線")
+    s.path([L((UL, CB), (UL, H))], "切断線")
+    s.path(front_proj_outline(), "切断線")
+    s.path(front_proj_walls(), "切断線")
+    s.path(front_proj_window(), "切断線")
+    s.path(card_rect(), "カード")
+    s.path(mirror_u(band_outline()), "お札", "HIDDEN")
+    s.ltext((W / 2 + 6, 44), "桃色破線＝左の④ベルトを", 2.4, align="c")
+    s.ltext((W / 2 + 6, 48.5), "中心で折り返した位置", 2.4, align="c")
+    s.ltext((W / 2 + 6, 54), "→ 窓の中に収まる", 2.4, align="c")
+    s.ltext((W / 2 + 6, 58.5), f"（すき間は両側 {fmt(WIN_CLEAR)}mm）", 2.4, align="c")
+    s.ltext((W / 2 + 6, 66), "窓の下の角押さえ（③と一体）で", 2.4, align="c")
+    s.ltext((W / 2 + 6, 70.5), "カードの右下が飛び出さない", 2.4, align="c")
+    s.ldim_v(FR, v_on(CW_A, FR), FR, v_on(CW_B, FR), W + 4,
+             "窓 " + fmt(v_on(CW_B, FR) - v_on(CW_A, FR)))
+    s.ldim_v(FR, v_on(C_A, FR), FR, v_on(C_B, FR), W + 10,
+             "④ " + fmt(v_on(C_B, FR) - v_on(C_A, FR)))
+
     s.place(0, 0)
-    nx = 48.0
     t = THICK
-    s.text((nx, 6.0), "仕様", 4.0)
-    s.note_lines(nx, -1.0, [
-        f"・サイズ：開き {fmt(2 * W)}×{fmt(H)}mm／閉じ {fmt(W)}×{fmt(H)}mm",
-        f"・厚み（閉じた状態の目安）：約{fmt(t['min'])}～{fmt(t['max'])}mm",
-        "　①1.0×2＋⑦0.2×2＋⑧0.4＋お札＋⑥0.2×2＋②0.8＋③の箱6.0",
+    s.text((x0 + 2, -34.0), "厚みの内訳（閉じた状態・カード部）", 3.0)
+    s.note_lines(x0 + 2, -40.0, [
+        "①1.0×2＋⑥0.2×2＋⑦0.4＋⑤0.2×2",
+        "＋②0.8＋③の箱6.0（カード6枚）",
+        f"＝ 約{fmt(t['min'])}mm（お札1～2枚）",
+        f"お札10枚＋裏ポケットにカード各1枚で約{fmt(t['max'])}mm",
+    ], h=2.3, gap=3.7)
+
+    nx = -2.0
+    s.text((nx, 87.0), "仕様", 3.6)
+    s.note_lines(nx, 81.0, [
+        f"・サイズ：開き {fmt(2 * W)}×{fmt(H)}mm／閉じ {fmt(W)}×{fmt(H)}mm、厚み約{fmt(t['min'])}～{fmt(t['max'])}mm",
         "・お札：折らずに入れる。右半分はユニットの下（上・左から差し込む）",
         "・小銭入れ：上端にファスナー。閉じたままでも開けられる（マチ6mm）",
         "・カード：6枚程度。窓の下の角押さえ（③と一体）で右下を押さえる",
         f"・窓は④ベルトより両側{fmt(WIN_CLEAR)}mm広く、閉じると④が窓に収まる",
-        "・裏ポケット：②の裏に布2段・上端は斜め（左が低く出し入れしやすい）",
-        f"・左側は⑧芯材＋⑦裏地で張りを出す。折り代は中心～ユニット左端 {fmt(UL)}mm",
-    ], h=2.3, gap=3.7)
-    s.text((nx, -36.0), "作り方の順序", 4.0)
-    s.note_lines(nx, -43.0, [
+        "・裏ポケット：②の裏に布2段・上端は斜め（左が低い）",
+        f"・左側は⑦芯材＋⑥裏地で張りを出す。折り代は中心～ユニット左端 {fmt(UL)}mm",
+    ], h=2.2, gap=3.5)
+    s.text((nx, 52.0), "作り方の順序", 3.6)
+    s.note_lines(nx, 46.0, [
         "1. 裁断・床面処理。③の折り線に溝を入れ、窓をくり抜き、自由辺を磨く",
-        "2. ①の左側に⑧芯材を貼り、⑦裏地を内側全面に貼る（折り目は接着剤を薄く）",
-        "3. ④ベルトを⑦の上に貼る。③のカード面の裏に⑨裏地を貼る",
+        "2. ①の左側に⑦芯材を貼り、⑥裏地を内側全面に貼る（貼り方は3/6）",
+        "3. ④ベルトを⑥の上に貼る。③のカード面の裏に⑧裏地を貼る",
         "4. ファスナー：下側テープを③上端の裏、上側テープを②上端の表に貼り、",
         "　 それぞれ上端から2.5mmで縫う",
         "5. ③のタブと谷を②に貼り、仕切りの谷（③＋②）を縫う",
         "6. ③の右タブ・下タブを②に貼る（カードを3枚ほど入れて壁を立てる）",
-        "7. ⑥a・⑥bの上端を折り返して貼り、②の裏に⑥a→⑥bの順に縫い代だけ貼る",
-        "8. 左端の縦の線（③左タブ＋②＋⑥a＋⑥b）を縫う → ユニット完成",
-        "9. 外周のうち、右辺・右下の角・ユニット部分の下辺以外を縫う",
+        "7. ⑤a・⑤bの上端を折り返して貼り、②の裏に⑤a→⑤bの順に縫い代だけ貼る",
+        "8. 左端の縦の線（③左タブ＋②＋⑤a＋⑤b）を縫う → ユニット完成",
+        "9. 外周のうち、右辺・右下の角・ユニット部分の下辺以外を縫う（①＋⑥＋④）",
         "10. ユニットを①に重ね、下辺→右下の角→右辺を全層まとめて縫う",
         "11. コバを仕上げ（布は0.5mm内側）、中心に折り癖を付ける",
-    ], h=2.3, gap=3.6)
+    ], h=2.2, gap=3.5)
     return s
+
+
+PAGES = [
+    ("1_pattern_body", page1),
+    ("2_pattern_front_base", page2),
+    ("3_pattern_pockets_band", page3),
+    ("4_assembly_inside", page4),
+    ("5_assembly_sections", page5),
+    ("6_assembly_notes", page6),
+]
 
 
 # =============================================================================
@@ -1300,7 +1395,7 @@ ACI_RGB = {1: "#d00000", 2: "#c8a000", 3: "#00902a", 4: "#0090c0", 5: "#1040e0",
 LW_MM = {"切断線": 0.35, "断面図": 0.4, "縫い線": 0.25, "図枠": 0.35}
 
 
-def render(sheet, pdf_path, png_path):
+def render(sheet, pdf, png_path):
     try:
         import matplotlib
         matplotlib.use("Agg")
@@ -1353,7 +1448,7 @@ def render(sheet, pdf_path, png_path):
                              color=color, lw=lw, linestyle=ls))
         elif e["t"] == "CIRCLE":
             ax.add_patch(Circle(e["c"], e["r"], fill=False, color=color, lw=lw, linestyle=ls))
-    fig.savefig(pdf_path)
+    pdf.savefig(fig)
     fig.savefig(png_path, dpi=150, facecolor="white")
     plt.close(fig)
 
@@ -1384,13 +1479,29 @@ def main():
         FR, v_on(CW_A, FR), v_on(CW_B, FR), KB, u_on(CW_A, KB), u_on(CW_B, KB)))
     print("ベルト: 側面 v=%.1f〜%.1f, 下辺 u=%.1f〜%.1f / 厚み目安 %s" % (
         A_EDGE_V, B_EDGE_V, A_BOT_U, B_BOT_U, THICK))
-    for name, sheet in (("pattern", draw_pattern_sheet()), ("assembly", draw_assembly_sheet())):
+    dxf_dir = os.path.join(OUT_DIR, "dxf")
+    png_dir = os.path.join(OUT_DIR, "preview")
+    os.makedirs(dxf_dir, exist_ok=True)
+    os.makedirs(png_dir, exist_ok=True)
+    sheets = []
+    for name, fn in PAGES:
+        sheet = fn()
         check_cp932(sheet)
-        dxf = os.path.join(OUT_DIR, f"wallet_{name}_A3.dxf")
+        dxf = os.path.join(dxf_dir, f"wallet_A4_{name}.dxf")
         write_dxf(sheet, dxf)
-        render(sheet, os.path.join(OUT_DIR, f"wallet_{name}_A3.pdf"),
-               os.path.join(OUT_DIR, f"preview_{name}.png"))
+        sheets.append((name, sheet))
         print("wrote", dxf, len(sheet.ents), "entities")
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        from matplotlib.backends.backend_pdf import PdfPages
+    except ImportError:
+        print("matplotlib が無いので PDF/PNG を省略")
+        return
+    with PdfPages(os.path.join(OUT_DIR, "wallet_A4_all.pdf")) as pdf:
+        for name, sheet in sheets:
+            render(sheet, pdf, os.path.join(png_dir, f"page{name.split('_')[0]}.png"))
+    print("wrote wallet_A4_all.pdf (%d pages)" % len(sheets))
 
 
 if __name__ == "__main__":
