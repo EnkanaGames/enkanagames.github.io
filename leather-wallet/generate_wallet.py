@@ -62,7 +62,7 @@ CW_B = C_B + WIN_CLEAR * math.hypot(1, K_AB)   # 窓の下辺（⑤）
 D_TOP_U, D_BOT_U = 23.0, 40.0
 
 # ⑥裏ポケット（布・上から入れる2段）。完成時の上端の位置
-POCKET_TOPS = (14.0, 26.0)       # ⑥a（奥・②側）, ⑥b（手前・外装側）
+POCKET_TOPS = (20.0, 32.0)       # ⑥a（奥・②側）, ⑥b（手前・外装側）
 FOLD_ALLOW = 6.0                 # 上端の折り返し代
 FABRIC_INSET = 0.5               # 布の端を革のコバより内側に下げる量
 
