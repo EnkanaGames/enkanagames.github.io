@@ -2,6 +2,14 @@
 
 ラフスケッチと右側の型紙イメージをもとに寸法を決めた、レザークラフト用の設計図です。Jw_cad で開いて編集できる DXF 形式で、**A4横・実寸（1:1）の6枚**に分けています。
 
+## 完成イメージ（CG）
+
+設計寸法から3Dモデルを作り、Blender（Cycles）で描いたイメージです。写真ではありません。革の色・糸・布の色は一例です。お札は参考のための図柄なしの紙です。
+
+| 開いた状態 | 右側ユニットの寄り | 閉じた状態（上端のファスナー） |
+|---|---|---|
+| ![開いた状態](render/wallet_open.jpg) | ![右側ユニット](render/wallet_detail.jpg) | ![閉じた状態](render/wallet_closed.jpg) |
+
 ## ファイル
 
 | ページ | DXF（`dxf/` フォルダ） | 内容 |
@@ -16,6 +24,7 @@
 - `wallet_A4_all.pdf`：6ページをまとめた印刷用PDF（A4横・実寸）。印刷するときは「実際のサイズ（100%）」を選んでください。
 - `preview/page1〜6.png`：プレビュー画像。
 - `generate_wallet.py`：図面の生成スクリプト（寸法を変えて作り直すとき用）。
+- `render/wallet_*.jpg`：完成イメージ（CG）。`render_wallet.py` で `generate_wallet.py` の寸法から作り直せます。
 
 ## Jw_cad での開き方
 
@@ -145,4 +154,12 @@
 ```
 pip install matplotlib   # PDF/PNG が必要な場合のみ
 python3 generate_wallet.py
+```
+
+完成イメージも作り直す場合は、Python 3.11 で Blender の Python モジュールを入れて実行します（CPU で1枚数分）。
+
+```
+pip install bpy==4.4.0 "numpy<2"
+python3.11 render_wallet.py                  # open / detail / closed の3枚
+python3.11 render_wallet.py open --samples 32 --scale 40   # 試し描き
 ```
