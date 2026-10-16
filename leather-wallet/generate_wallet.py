@@ -59,7 +59,7 @@ CW_A = C_A - WIN_CLEAR * math.hypot(1, K_AB)   # 窓の上辺（③のカード�
 CW_B = C_B + WIN_CLEAR * math.hypot(1, K_AB)   # 窓の下辺（③の角押さえ）
 
 # カード差込口（③前胴左の斜め辺）: カードポケット上端で u=D_TOP_U、底で u=D_BOT_U
-D_TOP_U, D_BOT_U = 23.0, 40.0
+D_TOP_U, D_BOT_U = 25.0, 42.0
 
 # ⑤裏ポケット（布・上から入れる2段）。完成時の上端は斜め：(左端 u=UL での v, 右端 u=W での v)
 POCKETS = ((30.0, 22.0), (42.0, 34.0))   # ⑤a（奥・②側）, ⑤b（手前・外装側）
@@ -896,7 +896,7 @@ def page2():
     s.ltext(((FL + FR) / 2, 22.5), "小銭入れの面", 3.0, align="c")
     s.ltext(((FL + FR) / 2, 27.5), "上端にファスナー（裏に下側テープ）", 2.3, align="c")
     s.ltext((FL + 1.0, ZT + ZIP_TAPE_IN + 3.0), "緑破線＝テープ", 2.0)
-    s.ltext((FL + 4, KT + CARD_DY + 4.0), "↑ 壁・谷・壁（谷の縫い線で②と縫う）", 2.2)
+    s.ltext((u_on_D(KT + 4) + 1.0, KT + CARD_DY + 4.0), "↑ 壁・谷・壁（谷の縫い線で②と縫う）", 2.2)
     cx = (u_on_D(KB) + FR) / 2
     s.ltext((cx, 66), "③ 前胴 ×1", 5.0, align="c")
     s.ltext((cx, 72), "牛革 0.6～0.8mm（柔らかめ）", 2.7, align="c")
